@@ -1,6 +1,3 @@
-# Using a Google Function to make a prediction from a model
-# https://cloud.google.com/ai-platform-unified/docs/tutorials/image-recognition-custom/serving
-
 import googleapiclient.discovery
 import tensorflow as tf
 from google.cloud import storage
