@@ -1,0 +1,17 @@
+
+trainingInput:
+  hyperparameters:
+    goal: MAXIMIZE
+    maxTrials: 10
+    maxParallelTrials: 0
+    hyperparameterMetricTag: accuracy
+    enableTrialEarlyStopping: TRUE
+    params:
+    - parameterName: batch-size
+      type: DISCRETE
+      discreteValues: [16, 32, 64]
+    - parameterName: learning-rate
+      type: DOUBLE
+      minValue: 0.0001
+      maxValue: 0.1
+      scaleType: UNIT_LOG_SCALE

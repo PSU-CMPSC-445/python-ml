@@ -101,8 +101,10 @@ AI-Platform
  - [Packaging code to submit a job to AI-Platform](https://cloud.google.com/ai-platform/training/docs/packaging-trainer)
  - [Flask Requests (Cloud Function)](https://flask.palletsprojects.com/en/1.1.x/reqcontext/)
  - [Http Cloud Function](https://cloud.google.com/functions/docs/writing/http)
- - [Downloading files from Bucket with Python](https://medium.com/@sandeepsinh/multiple-file-download-form-google-cloud-storage-using-python-and-gcs-api-1dbcab23c44
- )
+ - [Downloading files from Bucket with Python](https://medium.com/@sandeepsinh/multiple-file-download-form-google-cloud-storage-using-python-and-gcs-api-1dbcab23c44)
+ - [Hyperparameter Tuning](https://towardsdatascience.com/hyperparameter-tuning-on-google-cloud-platform-with-scikit-learn-7d6155195efb)
+ - [Google Hyperparameter Docs](https://cloud.google.com/ai-platform/training/docs/using-hyperparameter-tuning)
+ - [Image Data Augmentation](https://machinelearningmastery.com/how-to-configure-image-data-augmentation-when-training-deep-learning-neural-networks/)
 
 
 Next Steps

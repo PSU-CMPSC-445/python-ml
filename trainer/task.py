@@ -1,17 +1,23 @@
 import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import DirectoryIterator
 from trainer.model import create_model
 from google.cloud import storage
+from typing import Tuple
+from typing import Dict
 import argparse
 import zipfile
+import datetime
 import numpy as np
 
 
 # On proper packaging for use with Google AI
 # https://cloud.google.com/ai-platform/training/docs/packaging-trainer
 
+time_string: str = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 image_dir: str = "./dataset"
-dataset_file = "dataset.zip"
-model_file = "legoModel.h5"
+dataset_file = "prod_dataset.zip"
+model_file = f"legoModel_{time_string}.h5"
 labels_file = "labels.csv"
 client = storage.Client()
 
@@ -24,20 +30,15 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--job-dir',
-        default="../models",
+        default="./models",
         type=str,
         required=True,
         help='local or GCS location for writing checkpoints and exporting '
              'models')
     parser.add_argument(
-        '--image-height',
-        default=400,
-        type=int
-    )
-    parser.add_argument(
-        '--image-width',
-        default=400,
-        type=int
+        '--time-id',
+        default=time_string,
+        type=str
     )
     parser.add_argument(
         '--batch-size',
@@ -45,15 +46,20 @@ def get_args():
         type=int
     )
     parser.add_argument(
+        '--learning-rate',
+        default=0.001,
+        type=float
+    ),
+    parser.add_argument(
         '--num-epochs',
-        default=1,
+        default=32,
         type=int
     )
     args, _ = parser.parse_known_args()
     return args
 
 
-def load_training_and_validation_data(args):
+def load_training_and_validation_data(args) -> Tuple[ImageDataGenerator]:
     bucket = client.bucket('cmpsc445-bucket')
     blob = bucket.blob(dataset_file)
     blob.download_to_filename(dataset_file)
@@ -61,47 +67,63 @@ def load_training_and_validation_data(args):
     with zipfile.ZipFile(dataset_file) as zip_ref:
         zip_ref.extractall()
 
-    train_ds = tf.keras.preprocessing.image_dataset_from_directory(
-        image_dir,
-        validation_split=0.2,
-        subset="training",
-        seed=123,
-        image_size=(args.image_height, args.image_width),
-        batch_size=args.batch_size
+    datagen: ImageDataGenerator = ImageDataGenerator(
+        rotation_range=360,
+        horizontal_flip=True,
+        vertical_flip=True,
+        height_shift_range=0.1,
+        width_shift_range=0.1,
+        brightness_range=[0.4, 1.5],
+        zoom_range=0.1,
+        validation_split=0.2
     )
 
-    validation_ds = tf.keras.preprocessing.image_dataset_from_directory(
+    train_ds: DirectoryIterator = datagen.flow_from_directory(
         image_dir,
-        validation_split=0.2,
+        subset="training",
+        seed=123,
+        target_size=(227, 227),
+        batch_size=args.batch_size,
+        class_mode="categorical"
+    )
+
+    validation_ds: DirectoryIterator = datagen.flow_from_directory(
+        image_dir,
         subset="validation",
         seed=123,
-        image_size=(args.image_height, args.image_width),
-        batch_size=args.batch_size
+        target_size=(227, 227),
+        batch_size=args.batch_size,
+        class_mode="categorical"
     )
 
     return train_ds, validation_ds
 
 
 def train(args):
-    AUTOTUNE = tf.data.AUTOTUNE
     # Load Data for training and validation
     train_ds, validation_ds = load_training_and_validation_data(args)
-    np.savetxt(labels_file, [train_ds.class_names], delimiter=",", fmt="%s")
-    num_classes = len(train_ds.class_names)
-    train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
-    validation_ds = validation_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    classes: Dict[int] = train_ds.class_indices
+    np.savetxt(labels_file, list(classes.keys()), delimiter=",", fmt="%s")
 
     # Create, train and log model
-    # To view logs during training tensorboard --logdir=gs://cmpsc445-models --port=8080
-    model: tf.keras.Sequential = create_model(args.image_height, num_classes)
+    # To view logs during training tensorboard --logdir=gs://cmpsc445-models/logs --port=8080
+    model: tf.keras.Sequential = create_model(train_ds.num_classes, args.learning_rate)
+
+    log_dir = f"{args.job_dir}logs/{args.time_id}"
     tensorboard = tf.keras.callbacks.TensorBoard(
-        log_dir=f"{args.job_dir}logs/",
-        histogram_freq=0,
+        log_dir=log_dir,
+        histogram_freq=1,
         write_graph=True,
         write_images=True)
-    model.fit(train_ds, validation_data=validation_ds, epochs=args.num_epochs, callbacks=[tensorboard])
+
+    model.fit(
+        train_ds,
+        validation_data=validation_ds,
+        epochs=args.num_epochs,
+        callbacks=[tensorboard])
 
     # Save model as hdf5 format
+    model_file = f"legoModel_{args.time_id}.h5"
     model.save(model_file)
     print(model.summary())
     bucket = client.bucket("cmpsc445-models")
