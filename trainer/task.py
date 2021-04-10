@@ -16,7 +16,7 @@ import numpy as np
 
 time_string: str = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 image_dir: str = "./dataset"
-dataset_file = "live_image_dataset_4_classes.zip"
+dataset_file = "dataset.zip"
 model_file = "legoModel.h5"
 labels_file = "labels.csv"
 client = storage.Client()
@@ -133,7 +133,6 @@ def train(args):
     # Save label names to GCS
     labels_blob = bucket.blob(labels_file)
     labels_blob.upload_from_filename(labels_file)
-
 
 if __name__ == "__main__":
     arguments = get_args()

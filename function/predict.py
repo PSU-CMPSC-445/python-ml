@@ -62,6 +62,9 @@ def predict(request):
     predictions = model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
     predicted_index = tf.argmax(score)
+
+
+    ### this is where to look
     return json.dumps({
         "label": labels[predicted_index],
         "confidence": str(score[predicted_index].numpy())

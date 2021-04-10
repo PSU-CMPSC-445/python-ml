@@ -1,1 +1,4 @@
-gcloud ai-platform jobs submit training lego_classifier_20 --staging-bucket=gs://cmpsc445-staging --job-dir=gs://cmpsc445-models --package-path=trainer --module-name=trainer.task --region=us-east1 --runtime-version=2.4 --python-version=3.7 -- --time-id=lego_classifier_20 --batch-size=32 --num-epochs=100
+gcloud ai-platform jobs submit training lego_classifier_26 --staging-bucket=gs://cmpsc445-staging --job-dir=gs://cmpsc445-models --package-path=trainer --module-name=trainer.task --region=us-east1 --runtime-version=2.4 --python-version=3.7 -- --time-id=lego_classifier_26 --batch-size=32 --num-epochs=10
+
+with HyperParameter tuning
+gcloud ai-platform jobs submit training lego_classifier_28 --staging-bucket=gs://cmpsc445-staging --job-dir=gs://cmpsc445-models --package-path=trainer --module-name=trainer.task --region=us-east1 --runtime-version=2.4 --python-version=3.7 --config=trainer/hyperparameter_config.yaml -- --time-id=lego_classifier_28 --batch-size=32 --num-epochs=5
