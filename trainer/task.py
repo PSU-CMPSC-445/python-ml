@@ -16,8 +16,8 @@ import numpy as np
 
 time_string: str = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 image_dir: str = "./dataset"
-dataset_file = "prod_dataset.zip"
-model_file = f"legoModel_{time_string}.h5"
+dataset_file = "live_image_dataset_4_classes.zip"
+model_file = "legoModel.h5"
 labels_file = "labels.csv"
 client = storage.Client()
 
@@ -68,13 +68,13 @@ def load_training_and_validation_data(args) -> Tuple[ImageDataGenerator]:
         zip_ref.extractall()
 
     datagen: ImageDataGenerator = ImageDataGenerator(
-        rotation_range=360,
+        # rotation_range=360,
         horizontal_flip=True,
         vertical_flip=True,
-        height_shift_range=0.1,
-        width_shift_range=0.1,
+        # height_shift_range=0.1,
+        # width_shift_range=0.1,
         brightness_range=[0.4, 1.5],
-        zoom_range=0.1,
+        # zoom_range=0.1,
         validation_split=0.2
     )
 
@@ -106,7 +106,8 @@ def train(args):
     np.savetxt(labels_file, list(classes.keys()), delimiter=",", fmt="%s")
 
     # Create, train and log model
-    # To view logs during training tensorboard --logdir=gs://cmpsc445-models/logs --port=8080
+    # To view logs during training enter the line below into the command line
+    # tensorboard --logdir=gs://cmpsc445-models/logs --port=8080
     model: tf.keras.Sequential = create_model(train_ds.num_classes, args.learning_rate)
 
     log_dir = f"{args.job_dir}logs/{args.time_id}"
@@ -123,7 +124,6 @@ def train(args):
         callbacks=[tensorboard])
 
     # Save model as hdf5 format
-    model_file = f"legoModel_{args.time_id}.h5"
     model.save(model_file)
     print(model.summary())
     bucket = client.bucket("cmpsc445-models")
