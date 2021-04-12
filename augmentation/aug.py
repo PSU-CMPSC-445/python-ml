@@ -1,18 +1,24 @@
+##########################################################################
+# This program will take a directory of images and create altered copies #
+# One horizontal flip, one vertical flip, and 23 15 degree rotations     #
+##########################################################################
+
 from PIL import Image
 import glob
 import os
 
+# change this directory to the directory of images you want to alter, does not search recursively
 ROOT_DIR = 'C:/Users/sandy/OneDrive/Documents/1. PennState/CMPSC445/Group Project/Code Tests/images/2357/'
-
 image_list = []
 fn = []
+
+# Create glob for iteration
 for filename in glob.glob(ROOT_DIR + '*.png'):
     im = Image.open(filename)
     image_list.append(im)
 
-
+# Create filename for append
 file_list = os.listdir(ROOT_DIR)
-
 for files in file_list:
     fn.append(os.path.splitext(files)[0])
 
