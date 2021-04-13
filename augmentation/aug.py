@@ -8,7 +8,7 @@ import glob
 import os
 
 # change this directory to the directory of images you want to alter, does not search recursively
-ROOT_DIR = 'C:/Users/sandy/OneDrive/Documents/1. PennState/CMPSC445/Group Project/Code Tests/images/2357/'
+ROOT_DIR = 'C:/Code Tests/images/2357/'
 image_list = []
 fn = []
 
