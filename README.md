@@ -60,14 +60,18 @@ AI-Platform
        +--setup.py
 
  **model.py**
-  - responsible for defining and compiling the Sequential ML Model
+  - responsible for defining and compiling the model
+  - The model uses transfer learning and is based on the InceptionV3 architecture
   
  **task.py**
   - Main entry point of the ai-platform package.
   - Downloads a zip of the image dataset to the local server where it is running and 
   unzips the files.
   - loads all images with tensorflow
+  - augments each image as specified for each epoch
   - creates the model, trains the model, and saves it as an .h5 file a google bucket 
+  - logs accuracy activity using tensorboard
+  - prints out confusion matrix and classification report
   - saves a .csv file with the label class names to the same bucket.
   
 **setup.py**
@@ -89,7 +93,8 @@ AI-Platform
  - This is where all of the magic happens 
     * model and image loading
     * image pre-processing
-    * etc
+    * image classification prediction
+    * return preiction as a flask response to the client
  
  **requirements.txt**
  - The function gets its own requirements file since it lives on its on in the cloud.
@@ -106,13 +111,4 @@ AI-Platform
  - [Google Hyperparameter Docs](https://cloud.google.com/ai-platform/training/docs/using-hyperparameter-tuning)
  - [Image Data Augmentation](https://machinelearningmastery.com/how-to-configure-image-data-augmentation-when-training-deep-learning-neural-networks/)
 
-
-Next Steps
-==========
- - Setup our AI-Platorm job to automatically tune hyperparameters
- - Add any additional desired image pre-processing
- - Create variations for each real life lego image to bolster that dataset
- - Prepare full dataset by grouping images into folder classes
- - Fix Tensorboard to show training progress
- - Train full model
  

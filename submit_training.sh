@@ -10,8 +10,7 @@ gcloud ai-platform jobs submit training ${JOB_NAME} \
     --region=us-east1 \
     --runtime-version=2.4 \
     --python-version=3.7 \
-    --config=trainer/hyperparameter_config.yaml \
     -- \
     --time-id=${JOB_NAME} \
     --batch-size=32 \
-    --num-epochs=100
+    --num-epochs=32

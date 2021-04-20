@@ -1,6 +1,9 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing.image import DirectoryIterator
+from tensorflow.keras.applications.inception_v3 import preprocess_input
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
 from trainer.model import create_model
 from google.cloud import storage
 from typing import Tuple
@@ -17,8 +20,8 @@ import numpy as np
 time_string: str = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 image_dir: str = "./dataset"
 dataset_file = "dataset.zip"
-model_file = "legoModel.h5"
-labels_file = "labels.csv"
+model_file = f"legoModel_{time_string}.h5"
+labels_file = f"labels_{time_string}.csv"
 client = storage.Client()
 
 
@@ -52,7 +55,7 @@ def get_args():
     ),
     parser.add_argument(
         '--num-epochs',
-        default=32,
+        default=10,
         type=int
     )
     args, _ = parser.parse_known_args()
@@ -68,13 +71,10 @@ def load_training_and_validation_data(args) -> Tuple[ImageDataGenerator]:
         zip_ref.extractall()
 
     datagen: ImageDataGenerator = ImageDataGenerator(
-        # rotation_range=360,
+        preprocessing_function=preprocess_input,
+        rotation_range=15,
         horizontal_flip=True,
         vertical_flip=True,
-        # height_shift_range=0.1,
-        # width_shift_range=0.1,
-        brightness_range=[0.4, 1.5],
-        # zoom_range=0.1,
         validation_split=0.2
     )
 
@@ -82,7 +82,6 @@ def load_training_and_validation_data(args) -> Tuple[ImageDataGenerator]:
         image_dir,
         subset="training",
         seed=123,
-        target_size=(227, 227),
         batch_size=args.batch_size,
         class_mode="categorical"
     )
@@ -91,7 +90,6 @@ def load_training_and_validation_data(args) -> Tuple[ImageDataGenerator]:
         image_dir,
         subset="validation",
         seed=123,
-        target_size=(227, 227),
         batch_size=args.batch_size,
         class_mode="categorical"
     )
@@ -103,7 +101,8 @@ def train(args):
     # Load Data for training and validation
     train_ds, validation_ds = load_training_and_validation_data(args)
     classes: Dict[int] = train_ds.class_indices
-    np.savetxt(labels_file, list(classes.keys()), delimiter=",", fmt="%s")
+    class_labels = list(classes.keys())
+    np.savetxt(labels_file, class_labels, delimiter=",", fmt="%s")
 
     # Create, train and log model
     # To view logs during training enter the line below into the command line
@@ -123,9 +122,20 @@ def train(args):
         epochs=args.num_epochs,
         callbacks=[tensorboard])
 
+    model = tf.keras.models.load_model("legoModel_20210413-070348.h5")
+    Y_pred = model.predict(validation_ds)
+    y_pred = np.argmax(Y_pred, axis=1)
+    y_pred = [class_labels[pred] for pred in y_pred]
+    y_true = [class_labels[true] for true in validation_ds.classes]
+    print('Confusion Matrix')
+    cm = confusion_matrix(y_true, y_pred, labels=class_labels)
+    print(cm)
+    print('Report')
+    print(classification_report(y_true, y_pred, target_names=class_labels))
+
     # Save model as hdf5 format
     model.save(model_file)
-    print(model.summary())
+
     bucket = client.bucket("cmpsc445-models")
     model_blob = bucket.blob(model_file)
     model_blob.upload_from_filename(model_file)
