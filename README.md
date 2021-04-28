@@ -73,10 +73,14 @@ AI-Platform
   - logs accuracy activity using tensorboard
   - prints out confusion matrix and classification report
   - saves a .csv file with the label class names to the same bucket.
-  
+    
 **setup.py**
  - Lists out requirements so Google AI-Platform can download them
  - sets other project level settings
+
+  **To run a new job, exectute the submit_training.sh script from the project's root directory**
+  
+  **To train a model locally, download and extract the dataset to the ./trainer directory and then run the main method in the task.py file**
  
  Cloud Function
  --------------
@@ -99,6 +103,13 @@ AI-Platform
  **requirements.txt**
  - The function gets its own requirements file since it lives on its on in the cloud.
  These are only the requirements needed to make the Cloud Function work.
+ 
+ **To run a prediction locally:**
+   1. Move a finished model to the ./function directory
+   2. Place an image to run a prediction on in the same directory
+   3. Update the line in the prediction model `request_json = request.get_json()` to `request_json = request`
+   4. Update the filename in the json object of the main method to reflect the name of the file for the prediction
+   5. Run the main method in predict.py
  
  Resources
  ==========
